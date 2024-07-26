@@ -1,0 +1,29 @@
+name: 'Clear sftp files'
+description: 'Download a list of files separated by comma from a remote SFTP server'
+inputs:
+  host:
+    description: 'SFTP host'
+    required: true
+  port:
+    description: 'SFTP port'
+    required: true
+    default: '22'
+  username:
+    description: 'SFTP username'
+    required: true
+  password:
+    description: 'SFTP password'
+    required: true
+  file-patterns:
+    description: 'File patterns separated by comma'
+    required: true
+  remote-dir-path:
+    description: 'Remote directory path'
+    required: true
+  fail-if-no-files:
+    description: 'Fail if no files are found. Default ''false'' To activate set to ''true'''
+    required: true
+    default: 'false'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
