@@ -20,6 +20,10 @@ inputs:
   remote-dir-path:
     description: 'Remote directory path'
     required: true
+  artifact-name:
+    description: 'Artifact name'
+    required: true
+    default: 'cleared-files'
   fail-if-no-files:
     description: 'Fail if no files are found. Default ''false'' To activate set to ''true'''
     required: true

@@ -13,6 +13,7 @@ const username = core.getInput('username')
 const password = core.getInput('password')
 const filePatterns = core.getInput('file-patterns')
 const failIfNoFiles = core.getInput('fail-if-no-files') === 'true'
+const artifactName = core.getInput('artifact-name') || 'cleared-files'
 
 const artifact = new DefaultArtifactClient()
 
@@ -38,7 +39,7 @@ const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDo
     console.log('All files cleared')
     conn.end()
 
-    artifact.uploadArtifact('downloaded-files', listToDownload.map(file => file.localPath), '.')
+    artifact.uploadArtifact(artifactName, listToDownload.map(file => file.localPath), '.')
       .then(res => {
         console.log('Artifact uploaded')
         // delete local files

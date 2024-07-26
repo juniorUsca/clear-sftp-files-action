@@ -33,6 +33,9 @@ Example: `^registry.*\.json$,^package.*\.json$`
 
 Whether to fail if files are not found. Default is `'false'`. To Activate, set to `'true'`.
 
+### `artifact-name`
+
+The name of the artifact to upload the files to. Default is `cleared-files`.
 
 ## Outputs
 
@@ -52,4 +55,5 @@ with:
   file-patterns: '^registry.*\.json$,^package.*\.json$'
   remote-dir-path: '/path/to/remote/dir'
   fail-if-no-files: 'true'
+  artifact-name: 'backup'
 ```
