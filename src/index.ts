@@ -32,7 +32,7 @@ const credentials: ConnectConfig = {
 
 console.log(`It will be attempted to download the files with the following patterns: ${filePatterns}`)
 
-const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDownload[], position: number) => {
+const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDownload[], position: number, method: 'normal' | 'stream' = 'normal') => {
   const item = listToDownload.at(position)
   if (!item) {
     // all files cleared
@@ -60,27 +60,69 @@ const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDo
   console.log(`Downloading ${item.remotePath} to ${item.localPath}`)
 
   // normal download
-  sftp.fastGet(item.remotePath, item.localPath, errFastGet => {
-    if (errFastGet) {
-      console.log(`Error downloading file: ${item.remotePath} to ${item.localPath}`)
-      conn.end()
-      core.setFailed(errFastGet.message)
-      throw errFastGet
-    }
-    console.log(`Downloaded to ${item.localPath}`)
+  if (method === 'normal') {
+    sftp.fastGet(item.remotePath, item.localPath, errFastGet => {
+      if (errFastGet) {
+        console.log(`Error downloading file: ${item.remotePath} to ${item.localPath} using fastGet`)
 
-    sftp.unlink(item.remotePath, errUnlink => {
-      if (errUnlink) {
-        console.log(`Error deleting file: ${item.remotePath}`)
-        conn.end()
-        core.setFailed(errUnlink.message)
-        throw errUnlink
+        console.log('Trying download using stream')
+
+        executeAction(conn, sftp, listToDownload, position, 'stream')
+        return
+
+        // conn.end()
+        // core.setFailed(errFastGet.message)
+        // throw errFastGet
       }
-      console.log(`Deleted file: ${item.remotePath}`)
+      console.log(`Downloaded to ${item.localPath}`)
 
-      executeAction(conn, sftp, listToDownload, position + 1)
+      // delete file
+      sftp.unlink(item.remotePath, errUnlink => {
+        if (errUnlink) {
+          console.log(`Error deleting file: ${item.remotePath}`)
+          conn.end()
+          core.setFailed(errUnlink.message)
+          throw errUnlink
+        }
+        console.log(`Deleted file: ${item.remotePath}`)
+
+        executeAction(conn, sftp, listToDownload, position + 1, method)
+      })
     })
-  })
+  }
+  if (method === 'stream') {
+    const wtr = fs.createWriteStream(item.localPath, { autoClose: true })
+    const rdr = sftp.createReadStream(item.remotePath, { autoClose: true })
+    rdr.once('error', (err) => {
+      console.error('Error downloading file: ' + err)
+      conn.end()
+      core.setFailed(err.message)
+      throw err
+    })
+    wtr.once('error', (err) => {
+      console.error('Error writing file: ' + err)
+      conn.end()
+      core.setFailed(err.message)
+      throw err
+    })
+    rdr.once('end', () => {
+      console.log('Downloaded to ' + item.localPath)
+
+      // delete file
+      sftp.unlink(item.remotePath, errUnlink => {
+        if (errUnlink) {
+          console.log(`Error deleting file: ${item.remotePath}`)
+          conn.end()
+          core.setFailed(errUnlink.message)
+          throw errUnlink
+        }
+        console.log(`Deleted file: ${item.remotePath}`)
+
+        executeAction(conn, sftp, listToDownload, position + 1, method)
+      })
+    })
+    rdr.pipe(wtr)
+  }
 
   // victor download method
   // sftp.readFile(remoteFile, (err, data) => {
@@ -163,7 +205,7 @@ conn.on('ready', () => {
       console.log('Files to clear:', listToDownload.map(file => file.filename).join(', '))
       console.log('Clearing files...')
 
-      executeAction(conn, sftp, listToDownload, 0)
+      executeAction(conn, sftp, listToDownload, 0, 'normal')
     })
 
   })
