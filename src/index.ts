@@ -65,6 +65,8 @@ const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDo
       if (errFastGet) {
         console.log(`Error downloading file: ${item.remotePath} to ${item.localPath} using fastGet`)
 
+        console.error(errFastGet)
+
         console.log('Trying download using stream')
 
         executeAction(conn, sftp, listToDownload, position, 'stream')
