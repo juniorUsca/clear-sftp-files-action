@@ -32,6 +32,11 @@ const credentials: ConnectConfig = {
 
 console.log(`It will be attempted to download the files with the following patterns: ${filePatterns}`)
 
+if (filePatternsToDownload.length === 0) {
+  core.setFailed('No file patterns provided')
+  throw new Error('No file patterns provided')
+}
+
 const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDownload[], position: number, method: 'normal' | 'stream' = 'normal') => {
   const item = listToDownload.at(position)
   if (!item) {
@@ -95,13 +100,13 @@ const executeAction = (conn: Client, sftp: SFTPWrapper, listToDownload: FileToDo
   if (method === 'stream') {
     const wtr = fs.createWriteStream(item.localPath, { autoClose: true })
     const rdr = sftp.createReadStream(item.remotePath, { autoClose: true })
-    rdr.once('error', (err) => {
+    rdr.once('error', (err: Error) => {
       console.error('Error downloading file: ' + err)
       conn.end()
       core.setFailed(err.message)
       throw err
     })
-    wtr.once('error', (err) => {
+    wtr.once('error', (err: Error) => {
       console.error('Error writing file: ' + err)
       conn.end()
       core.setFailed(err.message)
@@ -190,7 +195,9 @@ conn.on('ready', () => {
           remotePath: path.posix.join(remoteDirPath, file.filename),
         }))
 
-      core.setOutput('filenames', listToDownload.map(file => file.filename).join(', '))
+        core.setOutput('file-names', JSON.stringify(
+          listToDownload.map(file => file.filename)
+        ))
 
       if (listToDownload.length === 0) {
         console.log('No files to clear')

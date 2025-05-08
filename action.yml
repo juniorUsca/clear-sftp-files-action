@@ -6,7 +6,6 @@ inputs:
     required: true
   port:
     description: 'SFTP port'
-    required: true
     default: '22'
   username:
     description: 'SFTP username'
@@ -22,11 +21,9 @@ inputs:
     required: true
   artifact-name:
     description: 'Artifact name'
-    required: true
     default: 'cleared-files'
   fail-if-no-files:
-    description: 'Fail if no files are found. Default ''false'' To activate set to ''true'''
-    required: true
+    description: 'Fail if no files are found. Default ''false''. To activate set to ''true'''
     default: 'false'
 runs:
   using: 'node20'

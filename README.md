@@ -10,7 +10,7 @@ This action upload files to artifact and delete files from remote server.
 
 ### `port`
 
-**Required** The port of the remote server.
+The port of the remote server. Default is `22`.
 
 ### `username`
 
@@ -39,9 +39,9 @@ The name of the artifact to upload the files to. Default is `cleared-files`.
 
 ## Outputs
 
-### `filenames`
+### `file-names`
 
-The filenames that were attempted to be downloaded. Separated by commas.
+The file names that were attempted to be downloaded. Array of strings.
 
 ## Example usage
 
