@@ -46,7 +46,7 @@ The file names that were attempted to be downloaded. Array of strings.
 ## Example usage
 
 ```yaml
-uses: actions/download-sftp-files@v1
+uses: juniorUsca/download-sftp-files@v2
 with:
   host: 'example.com'
   port: '22'
