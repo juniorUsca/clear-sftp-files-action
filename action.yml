@@ -28,3 +28,6 @@ inputs:
 runs:
   using: 'node20'
   main: 'dist/index.js'
+outputs:
+  file-names:
+    description: 'Array of file names that were cleared'
